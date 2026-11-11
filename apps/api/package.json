@@ -1,0 +1,22 @@
+{
+  "name": "@graph-lab/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "fastify": "^5.12.8",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
+  }
+}

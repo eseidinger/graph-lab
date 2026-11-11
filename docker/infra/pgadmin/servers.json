@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Apache AGE",
+      "Group": "Graph Lab",
+      "Host": "age",
+      "Port": 5432,
+      "MaintenanceDB": "graphlab",
+      "Username": "graphlab",
+      "SSLMode": "prefer"
+    }
+  }
+}

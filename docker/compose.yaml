@@ -1,0 +1,88 @@
+name: graph-lab
+
+services:
+  age:
+    image: apache/age:release_PG17_1.7.0
+    environment:
+      POSTGRES_USER: graphlab
+      POSTGRES_PASSWORD: ${AGE_PASSWORD:?Set AGE_PASSWORD in .env}
+      POSTGRES_DB: graphlab
+    ports:
+      - "127.0.0.1:${AGE_PORT:-5432}:5432"
+    volumes:
+      - age-data:/var/lib/postgresql/data
+      - ./infra/age/10-graph-lab.sql:/docker-entrypoint-initdb.d/10-graph-lab.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:9.19
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-dev@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?Set PGADMIN_PASSWORD in .env}
+      PGADMIN_DISABLE_POSTFIX: "1"
+    ports:
+      - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      - ./infra/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      age:
+        condition: service_healthy
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:2026.10.2
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?Set NEO4J_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${NEO4J_HTTP_PORT:-7474}:7474"
+      - "127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687"
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    restart: unless-stopped
+
+  hugegraph:
+    image: hugegraph/hugegraph:1.7.0
+    environment:
+      PASSWORD: ${HUGEGRAPH_ADMIN_PASSWORD:?Set HUGEGRAPH_ADMIN_PASSWORD in .env}
+      HG_SERVER_AUTH_TOKEN_SECRET: ${HUGEGRAPH_AUTH_TOKEN_SECRET:?Set HUGEGRAPH_AUTH_TOKEN_SECRET in .env}
+      HG_SERVER_MIN_FREE_MEMORY: "0"
+    ports:
+      - "127.0.0.1:${HUGEGRAPH_PORT:-8080}:8080"
+    volumes:
+      - hugegraph-data:/hugegraph-server/rocksdb-data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/versions >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    restart: unless-stopped
+
+  hubble:
+    image: hugegraph/hubble@sha256:5cf0a0f8c02a87fa8152c86fe5d3c64d87ba5615ddc1033cb891004c70ad38a6
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:h2:file:/hubble/data/hubble;DB_CLOSE_ON_EXIT=FALSE"
+    ports:
+      - "127.0.0.1:${HUBBLE_PORT:-8088}:8088"
+    volumes:
+      - hubble-data:/hubble/data
+      - ./infra/hubble/standalone.properties:/hubble/conf/hugegraph-hubble.properties:ro
+    depends_on:
+      hugegraph:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  age-data:
+  pgadmin-data:
+  neo4j-data:
+  neo4j-logs:
+  hugegraph-data:
+  hubble-data:
