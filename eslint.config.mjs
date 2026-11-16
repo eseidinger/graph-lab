@@ -13,6 +13,14 @@ export default tseslint.config(
     languageOptions: { globals: globals.node },
   },
   {
+    files: ['apps/*/tests/**/*.mjs', 'apps/api/integration/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+  },
+  {
+    files: ['e2e/**/*.ts', 'playwright.config.ts'],
+    languageOptions: { globals: globals.node },
+  },
+  {
     files: ['apps/web/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },
     plugins: {

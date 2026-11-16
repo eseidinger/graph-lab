@@ -48,6 +48,8 @@ The MVP supports Cypher `RETURN` queries with explicit projections and write que
 
 Run `npm run lint` to lint the API and web TypeScript code, `npm run check` for lint and TypeScript checks, and `npm run build` for production bundles. The web build also generates dependency license notices in `apps/web/dist/.vite/license.md`.
 
+Run `npm test` for API route and web component tests. `npm run test:e2e` runs a Chromium browser flow against the local web UI with mocked API responses; install the browser once with `npx playwright install chromium`. For the real Apache AGE integration test, start a disposable AGE database and set `AGE_TEST_DATABASE_URL` to its PostgreSQL URL before running `npm run test:age`. CI starts AGE and runs all three test suites.
+
 ## Console direction
 
 The MVP uses one locally configured AGE connection. Later milestones can add connection profiles, saved queries, and additional backends. Store-specific connection and query behavior should stay isolated so support for Gremlin and other data stores can be added without redesigning the user interface.

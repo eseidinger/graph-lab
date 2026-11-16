@@ -8,11 +8,15 @@
   "scripts": {
     "dev": "bash scripts/dev.sh",
     "build": "npm run build --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present && eslint e2e playwright.config.ts",
+    "test": "npm run test --workspaces --if-present",
+    "test:age": "npm run test:age -w @graph-lab/api",
+    "test:e2e": "playwright test",
     "check": "npm run lint && npm run check --workspaces --if-present"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
     "concurrently": "^10.0.7",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",

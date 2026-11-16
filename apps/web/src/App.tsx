@@ -5,6 +5,7 @@ import {
   Stack, Table, Tabs, Text, Title,
 } from '@mantine/core';
 import GraphView, { type GraphData } from './GraphView';
+import { platformCsrfToken } from './platformCsrf';
 
 type Result = {
   columns: string[];
@@ -24,11 +25,6 @@ function display(value: unknown): string {
   if (value == null) return 'null';
   if (typeof value === 'string') return value;
   return JSON.stringify(value);
-}
-
-function platformCsrfToken(): string | undefined {
-  const cookie = document.cookie.split('; ').find((part) => part.startsWith('__Host-platform-csrf='));
-  return cookie ? decodeURIComponent(cookie.slice('__Host-platform-csrf='.length)) : undefined;
 }
 
 export default function App() {
@@ -61,7 +57,7 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const csrfToken = platformCsrfToken();
+      const csrfToken = platformCsrfToken(document.cookie);
       const response = await fetch('/api/query', {
         method: 'POST',
         headers: {

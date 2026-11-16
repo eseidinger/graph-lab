@@ -216,3 +216,35 @@ Tag dabei erneut auf einen Digest auf.
 Für parallele Bearbeitung die aktuelle Revision mit `devplat deploy get
 --project graph-lab` lesen und beim Apply `--if-match REVISION` angeben.
 Rollback einer Anwendung rollt Datenbankänderungen oder Secrets nicht zurück.
+
+## Build und Deployment aus GitHub Actions
+
+Der [Build-Workflow](../.github/workflows/build.yml) prüft Pull Requests mit
+`npm ci`, Lint, TypeScript, API- und Web-Unit-Tests, einem Integrationstest
+gegen einen kurzlebigen Apache-AGE-Container, einem Chromium-Browsertest,
+Web/API-Build und Docker-Build. Der Browsertest simuliert API-Antworten und
+prüft die Bedienung der Web-Oberfläche. Nach
+einem Push auf `main` veröffentlicht er das geprüfte Image unter
+`eseidinger/graph-lab:latest` und zusätzlich unter `sha-<commit>`.
+Der [Deployment-Workflow](../.github/workflows/deploy.yml) läuft anschließend
+mit dem GitHub-Environment `production`: Er validiert die vollständige
+[`application.json`](../docker/platform/application.json), vergleicht den von
+der Plattform aufgelösten `latest`-Digest mit dem eben veröffentlichten Image
+und wartet nach dem Apply auf Workload-Readiness. Releases auf `main` werden
+nacheinander ausgeführt, damit sich ihre `latest`-Tags nicht überholen.
+
+Vor der ersten Ausführung folgende GitHub-Einstellungen setzen:
+
+| Ort | Name | Wert |
+| --- | --- | --- |
+| Repository Secret | `DOCKERHUB_USERNAME` | Docker-Hub-Nutzer mit Push-Recht auf `eseidinger/graph-lab` |
+| Repository Secret | `DOCKERHUB_TOKEN` | Docker-Hub-Access-Token, kein Kontopasswort |
+| `production` Variable | `PLATFORM_API_URL` | `https://platform.eseidinger.de` |
+| `production` Variable | `PLATFORM_TOKEN_ENDPOINT` | `https://identity.eseidinger.de/realms/platform/protocol/openid-connect/token` |
+| `production` Secret | `PLATFORM_CLIENT_ID` | Client-ID einer Deployment-Credential für `graph-lab` |
+| `production` Secret | `PLATFORM_CLIENT_SECRET` | Deren einmaliges Secret |
+
+Die Deployment-Credential muss auf `graph-lab` begrenzt sein; ein persönliches
+CLI-Login aus einer lokalen Shell steht GitHub Actions nicht zur Verfügung.
+Bei einem fehlgeschlagenen CI-Lauf bleiben die zuvor ausgerollte Revision und
+der letzte veröffentlichte Digest über die Plattformdiagnose nachvollziehbar.

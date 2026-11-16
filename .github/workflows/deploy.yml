@@ -1,0 +1,56 @@
+name: Deploy
+
+"on":
+  workflow_call:
+    inputs:
+      expected_digest:
+        description: Digest published by the build workflow
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -m pip install developer-platform-cli
+      - name: Validate the declaration and published image
+        env:
+          PLATFORM_API_URL: ${{ vars.PLATFORM_API_URL }}
+          PLATFORM_TOKEN_ENDPOINT: ${{ vars.PLATFORM_TOKEN_ENDPOINT }}
+          PLATFORM_CLIENT_ID: ${{ secrets.PLATFORM_CLIENT_ID }}
+          PLATFORM_CLIENT_SECRET: ${{ secrets.PLATFORM_CLIENT_SECRET }}
+          EXPECTED_DIGEST: ${{ inputs.expected_digest }}
+        run: |
+          devplat deploy validate --project graph-lab \
+            --file docker/platform/application.json --output json > validation.json
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          result = json.loads(Path('validation.json').read_text())
+          image = result['images']['web']
+          expected = os.environ['EXPECTED_DIGEST']
+          if not image.endswith('@' + expected):
+              raise SystemExit(f'latest resolves to {image}, expected {expected}')
+          print(f'Validated {image}')
+          PY
+      - name: Apply and wait for readiness
+        env:
+          PLATFORM_API_URL: ${{ vars.PLATFORM_API_URL }}
+          PLATFORM_TOKEN_ENDPOINT: ${{ vars.PLATFORM_TOKEN_ENDPOINT }}
+          PLATFORM_CLIENT_ID: ${{ secrets.PLATFORM_CLIENT_ID }}
+          PLATFORM_CLIENT_SECRET: ${{ secrets.PLATFORM_CLIENT_SECRET }}
+        run: >-
+          devplat deploy apply --project graph-lab
+          --file docker/platform/application.json --wait --output json
