@@ -1,0 +1,6 @@
+{
+  "name": "graph-data",
+  "provider": "postgresql",
+  "quota_bytes": 1073741824,
+  "extensions": ["age"]
+}

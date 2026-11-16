@@ -1,0 +1,43 @@
+{
+  "apiVersion": "platform.eseidinger.de/v1",
+  "kind": "Application",
+  "metadata": {
+    "name": "graph-lab"
+  },
+  "spec": {
+    "configuration": {
+      "values": {
+        "AGE_LOAD_LIBRARY": "false"
+      }
+    },
+    "components": [
+      {
+        "name": "web",
+        "type": "service",
+        "runtime": {
+          "type": "container",
+          "image": "docker.io/eseidinger/graph-lab:latest"
+        },
+        "ports": [
+          {
+            "name": "http",
+            "protocol": "http",
+            "port": 3001
+          }
+        ],
+        "bindings": [
+          {
+            "bindingId": "e4ddcdd9-3ff7-497e-99e9-5b7324026903",
+            "envPrefix": ""
+          }
+        ],
+        "exposure": "public",
+        "health": {
+          "readiness": {
+            "path": "/api/graphs"
+          }
+        }
+      }
+    ]
+  }
+}

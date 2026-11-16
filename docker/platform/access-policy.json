@@ -1,0 +1,36 @@
+{
+  "component": "web",
+  "defaultDecision": "deny",
+  "identityAttributes": {
+    "displayName": false,
+    "email": false
+  },
+  "routes": [
+    {
+      "name": "read-ui",
+      "match": {
+        "pathPrefix": "/",
+        "methods": ["GET"]
+      },
+      "authentication": {
+        "mode": "browser-session"
+      },
+      "authorization": {
+        "anyOfGroups": ["graph-users"]
+      }
+    },
+    {
+      "name": "run-query",
+      "match": {
+        "pathPrefix": "/api/query",
+        "methods": ["POST"]
+      },
+      "authentication": {
+        "mode": "browser-session"
+      },
+      "authorization": {
+        "anyOfGroups": ["graph-users"]
+      }
+    }
+  ]
+}

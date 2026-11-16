@@ -94,7 +94,7 @@ export class AgeStore {
     const start = performance.now();
     try {
       await client.query('BEGIN');
-      await client.query("LOAD 'age'");
+      if (process.env.AGE_LOAD_LIBRARY !== 'false') await client.query("LOAD 'age'");
       await client.query("SET LOCAL search_path = ag_catalog, public");
       await client.query("SET LOCAL statement_timeout = '15s'");
       const result = await client.query<Record<string, unknown>>(cypherSql(graph, cypher, shape.sqlColumns));

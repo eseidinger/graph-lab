@@ -1,0 +1,13 @@
+*
+!package.json
+!package-lock.json
+!apps/
+!apps/api/
+!apps/api/**
+!apps/web/
+!apps/web/**
+!docker/
+!docker/platform/
+!docker/platform/Dockerfile
+**/node_modules
+**/dist

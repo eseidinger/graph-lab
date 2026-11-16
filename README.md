@@ -32,6 +32,9 @@ The API and web UI stack is recorded in [ADR 0001](docs/adr/0001-api-and-web-ui-
 
 ## Run the graph-lab MVP
 
+For deployment on an existing Developer Platform installation, follow the
+[Developer Platform bootstrap guide](docs/developer-platform-bootstrap.md).
+
 Start the [Docker environment](#getting-started) first. With Node.js 24 and npm installed, run from the repository root:
 
 ```bash

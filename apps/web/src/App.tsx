@@ -26,6 +26,11 @@ function display(value: unknown): string {
   return JSON.stringify(value);
 }
 
+function platformCsrfToken(): string | undefined {
+  const cookie = document.cookie.split('; ').find((part) => part.startsWith('__Host-platform-csrf='));
+  return cookie ? decodeURIComponent(cookie.slice('__Host-platform-csrf='.length)) : undefined;
+}
+
 export default function App() {
   const [graphs, setGraphs] = useState<string[]>([]);
   const [graph, setGraph] = useState<string | null>(null);
@@ -56,9 +61,13 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
+      const csrfToken = platformCsrfToken();
       const response = await fetch('/api/query', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-Platform-CSRF-Token': csrfToken } : {}),
+        },
         body: JSON.stringify({ graph, cypher: query }),
       });
       const data = await response.json() as Result & { error?: string };
